@@ -46,6 +46,16 @@ async function verifyToken(authHeader) {
   const token = getToken(authHeader)
   const jwt = jsonwebtoken.decode(token, { complete: true })
 
+  try {
+    const res = await Axios.get(jwksUrl)
+    const key = res?.data?.keys?.find((k) => k.kid === jwt.header.kid)
+    if (!key) {
+      throw new Error('Key not found')
+    } 
+    return verify(token, key.x5c[0])
+  } catch (error) {
+    logger.error('Token verification failed', { error })
+  }
   // TODO: Implement token verification
   return undefined;
 }
