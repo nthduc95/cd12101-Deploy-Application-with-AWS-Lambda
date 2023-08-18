@@ -1,6 +1,6 @@
 import * as middy from 'middy'
 import { getUserId } from '../utils.mjs'
-import { createTodoLogic } from '../businessLogic/todos.mjs'
+import { createTodoLogic } from '../../businessLogic/todos.mjs'
 
 export const handler = middy(
   async (event) => {

@@ -12,7 +12,7 @@ export const getTodosLogic = async (userId) => {
 export const createTodoLogic = async (userId, todo) => {
   const todoId = uuid.v4()
   logger.info(`Creating todo ${todoId}`)
-  const attachmentUrl = attachmentUtils.getAttachmentUrl(todoId)
+  const attachmentUrl = getAttachmentUrl(todoId)
   return createTodo({
     userId,
     todoId,
