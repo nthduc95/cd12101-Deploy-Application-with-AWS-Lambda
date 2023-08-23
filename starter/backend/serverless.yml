@@ -1,3 +1,5 @@
+org: nthduc95
+app: serverless-todo-app-dev
 service: serverless-todo-app
 
 plugins:
@@ -8,6 +10,16 @@ frameworkVersion: '3'
 provider:
   name: aws
   runtime: nodejs14.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+
+  environment:
+    TODOS_TABLE: mytable20230823-${self:provider.stage}
+    TODOS_CREATED_AT_INDEX: CreatedAtIndex
+    S3_BUCKET: mys3bucket20230823-${self:provider.stage}
+    SIGNED_URL_EXPIRATION: 300
+    TODOS_USER_INDEX: TodoUserIndex
+    PROJECT_NAME: Todo
 
 functions:
 
