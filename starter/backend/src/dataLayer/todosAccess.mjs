@@ -1,5 +1,5 @@
 import * as AWS from 'aws-sdk'
-const AWSXRay = require('aws-xray-sdk')
+import AWSXRay from 'aws-xray-sdk'
 import { createLogger } from '../utils/logger.mjs'
 
 const XAWS = AWSXRay.captureAWS(AWS)
