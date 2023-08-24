@@ -1,5 +1,5 @@
-import { DynamoDBClient, QueryCommand } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, PutCommand, UpdateCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, PutCommand, UpdateCommand, DeleteCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { createLogger } from '../utils/logger.mjs'
 
 const logger = createLogger('todoAccess')
