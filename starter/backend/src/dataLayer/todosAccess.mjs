@@ -1,5 +1,5 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, PutCommand, UpdateCommand, DeleteCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { createLogger } from '../utils/logger.mjs'
 
 const logger = createLogger('todoAccess')
@@ -22,7 +22,7 @@ export const getTodos = async (userId) => {
 
 export const createTodo = async (newTodo) => {
     logger.info(`Creating new todo item: ${newTodo.todoId}`)
-    const command = new PutCommand({
+    const command = new QueryCommand({
         TableName: todosTable,
         Item: newTodo
     })
@@ -32,7 +32,7 @@ export const createTodo = async (newTodo) => {
 
 export const updateTodo = async (userId, todoId, updateData) => {
     logger.info(`Updating a todo item: ${todoId}`)
-    const command = new UpdateCommand({
+    const command = new QueryCommand({
         TableName: todosTable,
         Key: { userId, todoId },
         ConditionExpression: 'attribute_exists(todoId)',
@@ -48,7 +48,7 @@ export const updateTodo = async (userId, todoId, updateData) => {
 }
 
 export const deleteTodo = async (userId, todoId) => {
-    const command = new DeleteCommand({
+    const command = new QueryCommand({
         TableName: todosTable,
         Key: { userId, todoId }
     });
@@ -57,7 +57,7 @@ export const deleteTodo = async (userId, todoId) => {
 
 export const saveImgUrl = async (userId, todoId, bucketName) => {
     try {
-        const command = new UpdateCommand({
+        const command = new QueryCommand({
             TableName: todosTable,
             Key: { userId, todoId },
             ConditionExpression: 'attribute_exists(todoId)',
