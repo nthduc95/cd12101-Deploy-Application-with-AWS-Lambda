@@ -1,5 +1,3 @@
-org: nthduc95
-app: serverless-todo-app-dev
 service: serverless-todo-app
 
 plugins:

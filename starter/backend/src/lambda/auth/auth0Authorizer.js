@@ -1,5 +1,5 @@
-import Axios from 'axios'
-import jsonwebtoken from 'jsonwebtoken'
+import axios from 'axios'
+import * as jsonwebtoken from 'jsonwebtoken' 
 import { createLogger } from '../../utils/logger.mjs'
 
 const logger = createLogger('auth')
@@ -47,7 +47,7 @@ async function verifyToken(authHeader) {
   const jwt = jsonwebtoken.decode(token, { complete: true })
 
   try {
-    const res = await Axios.get(jwksUrl)
+    const res = await axios.get(jwksUrl)
     const key = res?.data?.keys?.find((k) => k.kid === jwt.header.kid)
     if (!key) {
       throw new Error('Key not found')
