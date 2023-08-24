@@ -1,5 +1,5 @@
 import axios from 'axios'
-import * as jsonwebtoken from 'jsonwebtoken' 
+import jsonwebtoken from 'jsonwebtoken'
 import { createLogger } from '../../utils/logger.mjs'
 
 const logger = createLogger('auth')
@@ -51,8 +51,10 @@ async function verifyToken(authHeader) {
     const key = res?.data?.keys?.find((k) => k.kid === jwt.header.kid)
     if (!key) {
       throw new Error('Key not found')
-    } 
-    return verify(token, key.x5c[0])
+    }
+    const pem = key.x5c[0]
+    const cert = `-----BEGIN CERTIFICATE-----\n${pem}\n-----END CERTIFICATE-----`
+    return jsonwebtoken.verify(token, cert)
   } catch (error) {
     logger.error('Token verification failed', { error })
   }

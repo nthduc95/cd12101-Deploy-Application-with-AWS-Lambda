@@ -1,4 +1,4 @@
-import * as middy from 'middy'
+import middy from 'middy'
 import { getUserId } from '../utils.mjs'
 import { createTodoLogic } from '../../businessLogic/todos.mjs'
 

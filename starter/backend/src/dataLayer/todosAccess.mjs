@@ -1,78 +1,72 @@
-import * as AWS from 'aws-sdk'
-import AWSXRay from 'aws-xray-sdk'
+import { DynamoDBClient, QueryCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, PutCommand, UpdateCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
 import { createLogger } from '../utils/logger.mjs'
 
-const XAWS = AWSXRay.captureAWS(AWS)
 const logger = createLogger('todoAccess')
-const docClient = new XAWS.DynamoDB.DocumentClient();
+const docClient = DynamoDBDocumentClient.from(new DynamoDBClient({ region: "us-east-1" }));
 const todosTable = process.env.TODOS_TABLE;
 
 export const getTodos = async (userId) => {
     logger.info('Getting all todo items')
 
-    const result = await docClient
-        .query({
-            TableName: todosTable,
-            KeyConditionExpression: 'userId = :userId',
-            ExpressionAttributeValues: {
-                ':userId': userId
-            }
-        })
-        .promise()
+    const command = new QueryCommand({
+        TableName: todosTable,
+        KeyConditionExpression: 'userId = :userId',
+        ExpressionAttributeValues: {
+            ':userId': userId
+        }
+    })
+    const result = await docClient.send(command)
     return result.Items
 }
 
 export const createTodo = async (newTodo) => {
     logger.info(`Creating new todo item: ${newTodo.todoId}`)
-    await docClient
-        .put({
-            TableName: todosTable,
-            Item: newTodo
-        })
-        .promise()
+    const command = new PutCommand({
+        TableName: todosTable,
+        Item: newTodo
+    })
+    await docClient.send(command)
     return newTodo
 }
 
 export const updateTodo = async (userId, todoId, updateData) => {
     logger.info(`Updating a todo item: ${todoId}`)
-    await docClient
-        .update({
-            TableName: todosTable,
-            Key: { userId, todoId },
-            ConditionExpression: 'attribute_exists(todoId)',
-            UpdateExpression: 'set #n = :n, dueDate = :due, done = :dn',
-            ExpressionAttributeNames: { '#n': 'name' },
-            ExpressionAttributeValues: {
-                ':n': updateData.name,
-                ':due': updateData.dueDate,
-                ':dn': updateData.done
-            }
-        })
-        .promise()
+    const command = new UpdateCommand({
+        TableName: todosTable,
+        Key: { userId, todoId },
+        ConditionExpression: 'attribute_exists(todoId)',
+        UpdateExpression: 'set #n = :n, dueDate = :due, done = :dn',
+        ExpressionAttributeNames: { '#n': 'name' },
+        ExpressionAttributeValues: {
+            ':n': updateData.name,
+            ':due': updateData.dueDate,
+            ':dn': updateData.done
+        }
+    })
+    await docClient.send(command);
 }
 
 export const deleteTodo = async (userId, todoId) => {
-    await docClient
-        .delete({
-            TableName: todosTable,
-            Key: { userId, todoId }
-        })
-        .promise()
+    const command = new DeleteCommand({
+        TableName: todosTable,
+        Key: { userId, todoId }
+    });
+    await docClient.send(command);
 }
 
 export const saveImgUrl = async (userId, todoId, bucketName) => {
     try {
-        await docClient
-            .update({
-                TableName: todosTable,
-                Key: { userId, todoId },
-                ConditionExpression: 'attribute_exists(todoId)',
-                UpdateExpression: 'set attachmentUrl = :attachmentUrl',
-                ExpressionAttributeValues: {
-                    ':attachmentUrl': `https://${bucketName}.s3.amazonaws.com/${todoId}`
-                }
-            })
-            .promise()
+        const command = new UpdateCommand({
+            TableName: todosTable,
+            Key: { userId, todoId },
+            ConditionExpression: 'attribute_exists(todoId)',
+            UpdateExpression: 'set attachmentUrl = :attachmentUrl',
+            ExpressionAttributeValues: {
+                ':attachmentUrl': `https://${bucketName}.s3.amazonaws.com/${todoId}`
+            }
+        })
+        await docClient.send(command);
         logger.info(
             `Updating image url for a todo item: https://${bucketName}.s3.amazonaws.com/${todoId}`
         )
