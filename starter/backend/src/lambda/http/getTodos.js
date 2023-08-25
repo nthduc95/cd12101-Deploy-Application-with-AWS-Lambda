@@ -13,10 +13,11 @@ export const handler = middy()
     })
   )
   .handler(async (event) => {
-    const userId = getUserId(event)
-    const todos = await getTodosLogic(userId)
+    const userId = getUserId(event);
+    const todos = await getTodosLogic(userId);
+    const response = { items: todos };
     return {
       statusCode: 200,
-      body: JSON.stringify(todos)
+      body: JSON.stringify(response)
     }
   })

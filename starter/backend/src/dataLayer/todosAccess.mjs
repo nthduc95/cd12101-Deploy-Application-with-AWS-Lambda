@@ -1,5 +1,5 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, QueryCommand, PutCommand, DeleteCommand  } from "@aws-sdk/lib-dynamodb";
 import { createLogger } from '../utils/logger.mjs'
 
 const logger = createLogger('todoAccess')
@@ -22,8 +22,9 @@ export const getTodos = async (userId) => {
 
 export const createTodo = async (newTodo) => {
     logger.info(`Creating new todo item: ${newTodo.todoId}`)
-    const command = new QueryCommand({
+    const command = new PutCommand({
         TableName: todosTable,
+        KeyConditionExpression: 'userId = :userId',
         Item: newTodo
     })
     await docClient.send(command)
@@ -36,8 +37,8 @@ export const updateTodo = async (userId, todoId, updateData) => {
         TableName: todosTable,
         Key: { userId, todoId },
         ConditionExpression: 'attribute_exists(todoId)',
-        UpdateExpression: 'set #n = :n, dueDate = :due, done = :dn',
-        ExpressionAttributeNames: { '#n': 'name' },
+        KeyConditionExpression: 'userId = :userId',
+        UpdateExpression: 'set name = :n, dueDate = :due, done = :dn',
         ExpressionAttributeValues: {
             ':n': updateData.name,
             ':due': updateData.dueDate,
@@ -48,8 +49,9 @@ export const updateTodo = async (userId, todoId, updateData) => {
 }
 
 export const deleteTodo = async (userId, todoId) => {
-    const command = new QueryCommand({
+    const command = new DeleteCommand ({
         TableName: todosTable,
+        KeyConditionExpression: 'userId = :userId',
         Key: { userId, todoId }
     });
     await docClient.send(command);
@@ -61,15 +63,16 @@ export const saveImgUrl = async (userId, todoId, bucketName) => {
             TableName: todosTable,
             Key: { userId, todoId },
             ConditionExpression: 'attribute_exists(todoId)',
+            KeyConditionExpression: 'userId = :userId',
             UpdateExpression: 'set attachmentUrl = :attachmentUrl',
             ExpressionAttributeValues: {
                 ':attachmentUrl': `https://${bucketName}.s3.amazonaws.com/${todoId}`
             }
         })
-        await docClient.send(command);
         logger.info(
             `Updating image url for a todo item: https://${bucketName}.s3.amazonaws.com/${todoId}`
         )
+        await docClient.send(command);
     } catch (error) {
         logger.error(error)
     }

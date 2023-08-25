@@ -1,33 +1,34 @@
-import * as middy from 'middy'
+import middy from '@middy/core'
+import cors from '@middy/http-cors'
+import httpErrorHandler from '@middy/http-error-handler'
+import { createLogger } from '../../utils/logger.mjs'
 import { getUserId } from '../utils.mjs'
 import { saveImgUrl } from '../../dataLayer/todosAccess.mjs'
-import * as AWS from 'aws-sdk'
-import * as AWSXRay from 'aws-xray-sdk'
-
-
-const XAWS = AWSXRay.captureAWS(AWS)
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3"
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 
 const bucketName = process.env.S3_BUCKET
 const urlExpiration = Number(process.env.SIGNED_URL_EXPIRATION)
-const s3 = new XAWS.S3({
-  signatureVersion: 'v4'
-})
+const logger = createLogger('generateUploadUrl')
+const client = new S3Client({ region: "us-east-1" });
 
-
-export const handler = middy(
-  async (event) => {
+export const handler = middy()
+  .use(httpErrorHandler())
+  .use(
+    cors({
+      credentials: true
+    })
+  )
+  .handler(async (event) => {
     const todoId = event.pathParameters.todoId
 
     logger.info('Generating upload URL:', {
       todoId
     })
     const userId = getUserId(event)
+    const command = new PutObjectCommand({Bucket: bucketName, Key: todoId });
+    const uploadUrl = getSignedUrl(client, command, { expiresIn: urlExpiration })
 
-    const uploadUrl = s3.getSignedUrl('putObject', {
-      Bucket: bucketName,
-      Key: todoId,
-      Expires: urlExpiration
-    })
     logger.info('Generating upload URL:', {
       todoId,
       uploadUrl
@@ -44,11 +45,4 @@ export const handler = middy(
         uploadUrl: uploadUrl
       })
     }
-  }
-)
-
-handler.use(
-  cors({
-    credentials: true
   })
-)
