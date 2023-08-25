@@ -15,7 +15,7 @@ provider:
     TODOS_TABLE: mytable20230823-${self:provider.stage}
     TODOS_CREATED_AT_INDEX: CreatedAtIndex
     S3_BUCKET: mys3bucket20230823-${self:provider.stage}
-    SIGNED_URL_EXPIRATION: 300
+    SIGNED_URL_EXPIRATION: 3600
     TODOS_USER_INDEX: TodoUserIndex
     PROJECT_NAME: Todo
 

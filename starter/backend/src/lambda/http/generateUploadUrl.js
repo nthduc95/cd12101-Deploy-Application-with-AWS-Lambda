@@ -5,7 +5,7 @@ import { createLogger } from '../../utils/logger.mjs'
 import { getUserId } from '../utils.mjs'
 import { saveImgUrl } from '../../dataLayer/todosAccess.mjs'
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3"
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
 const bucketName = process.env.S3_BUCKET
 const urlExpiration = Number(process.env.SIGNED_URL_EXPIRATION)
@@ -23,11 +23,12 @@ export const handler = middy()
     const todoId = event.pathParameters.todoId
 
     logger.info('Generating upload URL:', {
-      todoId
+      todoId,
+      bucketName
     })
     const userId = getUserId(event)
     const command = new PutObjectCommand({Bucket: bucketName, Key: todoId });
-    const uploadUrl = getSignedUrl(client, command, { expiresIn: urlExpiration })
+    const uploadUrl = await getSignedUrl(client, command, { expiresIn: urlExpiration })
 
     logger.info('Generating upload URL:', {
       todoId,
