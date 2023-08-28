@@ -3,7 +3,7 @@ import { getTodos, createTodo, updateTodo, deleteTodo } from '../dataLayer/todos
 import { createLogger } from '../utils/logger.mjs'
 import { getAttachmentUrl } from '../fileStorage/attachmentUtils.mjs'
 
-const logger = createLogger('TodoAccess')
+const logger = createLogger('todos')
 
 export const getTodosLogic = async (userId) => {
   return getTodos(userId)

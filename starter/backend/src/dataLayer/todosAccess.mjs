@@ -1,5 +1,5 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, QueryCommand, PutCommand, DeleteCommand  } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, QueryCommand, PutCommand, DeleteCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { createLogger } from '../utils/logger.mjs'
 
 const logger = createLogger('todoAccess')
@@ -24,7 +24,6 @@ export const createTodo = async (newTodo) => {
     logger.info(`Creating new todo item: ${newTodo.todoId}`)
     const command = new PutCommand({
         TableName: todosTable,
-        KeyConditionExpression: 'userId = :userId',
         Item: newTodo
     })
     await docClient.send(command)
@@ -33,16 +32,16 @@ export const createTodo = async (newTodo) => {
 
 export const updateTodo = async (userId, todoId, updateData) => {
     logger.info(`Updating a todo item: ${todoId}`)
-    const command = new QueryCommand({
+    const command = new UpdateCommand({
         TableName: todosTable,
         Key: { userId, todoId },
         ConditionExpression: 'attribute_exists(todoId)',
-        KeyConditionExpression: 'userId = :userId',
-        UpdateExpression: 'set name = :n, dueDate = :due, done = :dn',
+        UpdateExpression: 'set #n = :n, dueDate = :due, done = :dn',
+        ExpressionAttributeNames: { '#n': 'name' },
         ExpressionAttributeValues: {
             ':n': updateData.name,
             ':due': updateData.dueDate,
-            ':dn': updateData.done
+            ':dn': updateData.done,
         }
     })
     await docClient.send(command);
@@ -51,7 +50,6 @@ export const updateTodo = async (userId, todoId, updateData) => {
 export const deleteTodo = async (userId, todoId) => {
     const command = new DeleteCommand ({
         TableName: todosTable,
-        KeyConditionExpression: 'userId = :userId',
         Key: { userId, todoId }
     });
     await docClient.send(command);
@@ -59,14 +57,13 @@ export const deleteTodo = async (userId, todoId) => {
 
 export const saveImgUrl = async (userId, todoId, bucketName) => {
     try {
-        const command = new QueryCommand({
+        const command = new UpdateCommand({
             TableName: todosTable,
             Key: { userId, todoId },
             ConditionExpression: 'attribute_exists(todoId)',
-            KeyConditionExpression: 'userId = :userId',
             UpdateExpression: 'set attachmentUrl = :attachmentUrl',
             ExpressionAttributeValues: {
-                ':attachmentUrl': `https://${bucketName}.s3.amazonaws.com/${todoId}`
+                ':attachmentUrl': `https://${bucketName}.s3.amazonaws.com/${todoId}`,
             }
         })
         logger.info(
