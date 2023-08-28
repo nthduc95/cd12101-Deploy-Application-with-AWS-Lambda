@@ -1,8 +1,6 @@
 import * as uuid from 'uuid'
 import { getTodos, createTodo, updateTodo, deleteTodo } from '../dataLayer/todosAccess.mjs'
 import { createLogger } from '../utils/logger.mjs'
-import { getAttachmentUrl } from '../fileStorage/attachmentUtils.mjs'
-
 const logger = createLogger('todos')
 
 export const getTodosLogic = async (userId) => {
@@ -12,13 +10,11 @@ export const getTodosLogic = async (userId) => {
 export const createTodoLogic = async (userId, todo) => {
   const todoId = uuid.v4()
   logger.info(`Creating todo ${todoId}`)
-  const attachmentUrl = getAttachmentUrl(todoId)
   return createTodo({
     userId,
     todoId,
     createdAt: new Date().toISOString(),
     done: false,
-    attachmentUrl,
     ...todo
   })
 }

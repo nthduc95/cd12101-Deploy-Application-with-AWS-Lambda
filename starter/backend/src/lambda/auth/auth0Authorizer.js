@@ -58,7 +58,6 @@ async function verifyToken(authHeader) {
   } catch (error) {
     logger.error('Token verification failed', { error })
   }
-  // TODO: Implement token verification
   return undefined;
 }
 
